@@ -1,4 +1,5 @@
 <template>
+  <body>
   <div id="appContainer">
     
     <h1> {{ title }} </h1>
@@ -24,7 +25,7 @@
     </div>
 
     <div v-if="newTask.length > 0">
-      <h5>New task preview</h5>
+      <h6>New task preview: </h6>
       <p>{{ newTask }}</p>
     </div>
     <h6>Click on task for option to delete</h6>
@@ -43,6 +44,7 @@
       </li>
     </ul>
   </div>
+</body>
 </template>
 
 <script>
@@ -113,7 +115,6 @@ export default {
   font-family: Avenir, Helvetica, Arial, sans-serif;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
-  text-align: center;
   color: #2c3e50;
   margin-top: 60px;
   font-size: 1.5em;
@@ -132,16 +133,22 @@ export default {
   transform: translate(-50%, -50%);
 }
 
+body {
+  background-color: #bedffa;
+}
+
 h1 {
   color: #333;
   font-size: 2.5rem;
   text-align: center;
+  background-color: #bedffa;
 }
 
 h2 {
   color: #666;
   font-size: 1.5rem;
   margin-top: 1rem;
+  text-align: center;
 }
 
 
@@ -155,6 +162,7 @@ h2 {
 .task-input span {
   color: #777;
   font-size: 0.9rem;
+  text-align: center;
 }
 
 .task-input input {
@@ -181,7 +189,7 @@ h2 {
 
 .task-preview {
   margin-top: 1rem;
-  background-color: #f9f9f9;
+  background-color: #aaa5a5;
   padding: 0.5rem;
   border-left: 4px solid #007bff;
 }
