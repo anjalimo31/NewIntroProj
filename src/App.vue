@@ -1,12 +1,12 @@
 <template>
-  <body>
+  <div id="appContainer">
     
     <h1> {{ title }} </h1>
-    <img :src="logoURL" :alt="logoCaption" width="400" height="400" />
     <br>
     <h2>Add a new task</h2>
+    
 
-    <div>
+    <div class = "task-input">
       <span>You have {{ allTasks }} {{ allTasks > 1? 'tasks' : 'task' }} at the moment</span>
       <br>
       <input type="text"
@@ -24,11 +24,11 @@
     </div>
 
     <div v-if="newTask.length > 0">
-      <h3>New task preview</h3>
+      <h5>New task preview</h5>
       <p>{{ newTask }}</p>
     </div>
-
-    <ul>
+    <h6>Click on task for option to delete</h6>
+    <ul class="task-list">
       <li 
         v-for="(task, index) in latest" 
         :key="task.id"
@@ -42,7 +42,7 @@
         </div>
       </li>
     </ul>
-</body>
+  </div>
 </template>
 
 <script>
@@ -52,28 +52,40 @@ export default {
     return {
       title: 'My To Do App',
       newTask: '',
-      logoURL: 'https://images.unsplash.com/photo-1507925921958-8a62f3d1a50d?ixid=MnwxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8&ixlib=rb-1.2.1&auto=format&fit=crop&w=1955&q=80',
-      logoCaption: 'A photo by Kelly Sikkema on Unsplash showing post-it notes',
-      tasks: [
-        { id: 1, name: 'Learn Vue JS', finished: false },
-        { id: 2, name: 'Build a Vue application', finished: false },
-        { id: 3, name: 'Write an article about Vue JS', finished: false }
-      ]
+      tasks: []
     }
   },
+  async created() {
+    const response = await fetch("https://jgubwhhf94.execute-api.us-east-2.amazonaws.com/todos")
+    this.tasks = await response.json()
+  },
   methods: {
-    addTask() {
+    async addTask() {
       if (this.newTask.length < 1) return
-      
-      this.tasks.push({
-        id: this.tasks.length + 1,
+      let newtask = {
+        id: Math.floor(Math.random() * (999999999 - 100000000) + 100000000),
         name: this.newTask,
         finished: false
-      });
+      }
+      await fetch("https://jgubwhhf94.execute-api.us-east-2.amazonaws.com/todos", {
+        method: "post",
+        headers: {
+          "Content-Type": "application/json"
+        },
+        body: JSON.stringify(newtask)
+      })
+      this.tasks.push(newtask);
 
       this.newTask = ''
     },
-    removeTask(taskID) {
+    async removeTask(taskID) {
+      await fetch("https://jgubwhhf94.execute-api.us-east-2.amazonaws.com/todos", {
+        method: "delete",
+        headers: {
+          "Content-Type": "application/json"
+        },
+        body: JSON.stringify({ id: taskID })
+      })
       this.tasks = this.tasks.filter(task => {
         return task.id !== taskID
       });
@@ -101,21 +113,130 @@ export default {
   font-family: Avenir, Helvetica, Arial, sans-serif;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
-  text-align: left;
+  text-align: center;
   color: #2c3e50;
   margin-top: 60px;
   font-size: 1.5em;
 }
 
-.strikeout {
-  text-decoration: line-through;
+#appContainer {
+  background-color: #ffffff;
+  padding: 2rem;
+  border-radius: 8px;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+  width: 100%;
+  max-width: 600px;
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+}
+
+h1 {
+  color: #333;
+  font-size: 2.5rem;
+  text-align: center;
+}
+
+h2 {
+  color: #666;
+  font-size: 1.5rem;
+  margin-top: 1rem;
 }
 
 
+.task-input {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  margin-top: 1rem;
+}
 
-body {background-color: rgb(206, 250, 250);}
-h1 {background-color: rgb(172, 243, 243); text-align: center;}
-h2 {background-color: rgb(158, 230, 230);}
-h3 {background-color: rgb(133, 207, 207);}
-img {float: right; border: 16px rgb(102, 206, 206) solid}
+.task-input span {
+  color: #777;
+  font-size: 0.9rem;
+}
+
+.task-input input {
+  padding: 0.5rem;
+  border: 1px solid #ddd;
+  border-radius: 4px;
+  font-size: 1rem;
+}
+
+.task-input button {
+  padding: 0.5rem 1rem;
+  border: none;
+  border-radius: 4px;
+  background-color: #007bff;
+  color: #fff;
+  font-size: 1rem;
+  cursor: pointer;
+}
+
+.task-input button:disabled {
+  background-color: #ccc;
+  cursor: not-allowed;
+}
+
+.task-preview {
+  margin-top: 1rem;
+  background-color: #f9f9f9;
+  padding: 0.5rem;
+  border-left: 4px solid #007bff;
+}
+
+.task-preview h5 {
+  margin: 0;
+  color: #007bff;
+}
+
+.task-preview p {
+  margin: 0.5rem 0 0;
+  color: #333;
+}
+
+.task-list {
+  list-style: none;
+  padding: 0;
+  margin-top: 1rem;
+}
+
+.task-list li {
+  padding: 0.5rem;
+  border-bottom: 1px solid #eee;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.task-list li:last-child {
+  border-bottom: none;
+}
+
+.task-list .task-item {
+  width: 100%;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.task-list button {
+  padding: 0.3rem 0.6rem;
+  border: none;
+  border-radius: 4px;
+  background-color: #dc3545;
+  color: #fff;
+  font-size: 0.8rem;
+  cursor: pointer;
+}
+
+.strikeout {
+  text-decoration: line-through;
+  color: #777;
+}
+
+.strikeout .task-item {
+  opacity: 0.6;
+}
 </style>
