@@ -1,24 +1,24 @@
 <template>
   <body>
   <div id="appContainer">
-    
+
     <h1> {{ title }} </h1>
     <br>
     <h2>Add a new task</h2>
-    
 
-    <div class = "task-input">
-      <span>You have {{ allTasks }} {{ allTasks > 1? 'tasks' : 'task' }} at the moment</span>
+
+    <div class="task-input">
+      <span>You have {{ allTasks }} {{ allTasks > 1 ? 'tasks' : 'task' }} at the moment</span>
       <br>
       <input type="text"
-        v-model = "newTask"
-        @keyup.enter = "addTask"
-        placeholder = "Add a new task"
-        >
+             v-model="newTask"
+             @keyup.enter="addTask"
+             placeholder="Add a new task"
+      >
 
       <button
-        @click="addTask"
-        :disabled="newTask.length < 1"
+          @click="addTask"
+          :disabled="newTask.length < 1"
       >
         Add task
       </button>
@@ -30,11 +30,11 @@
     </div>
     <h6>Click on task for option to delete</h6>
     <ul class="task-list">
-      <li 
-        v-for="(task, index) in latest" 
-        :key="task.id"
-        @click="finishTask(task)"
-        :class="{ strikeout: task.finished }"
+      <li
+          v-for="(task, index) in latest"
+          :key="task.id"
+          @click="finishTask(task)"
+          :class="{ strikeout: task.finished }"
       >
         {{ index + 1 }}. {{ task.name }}
 
@@ -44,69 +44,61 @@
       </li>
     </ul>
   </div>
-</body>
+  </body>
 </template>
 
-<script>
+<script setup>
+import {ref, onMounted, computed} from "vue";
 
-export default {
-  data() {
-    return {
-      title: 'My To Do App',
-      newTask: '',
-      tasks: []
-    }
-  },
-  async created() {
-    const response = await fetch("https://jgubwhhf94.execute-api.us-east-2.amazonaws.com/todos")
-    this.tasks = await response.json()
-  },
-  methods: {
-    async addTask() {
-      if (this.newTask.length < 1) return
-      let newtask = {
-        id: Math.floor(Math.random() * (999999999 - 100000000) + 100000000),
-        name: this.newTask,
-        finished: false
-      }
-      await fetch("https://jgubwhhf94.execute-api.us-east-2.amazonaws.com/todos", {
-        method: "post",
-        headers: {
-          "Content-Type": "application/json"
-        },
-        body: JSON.stringify(newtask)
-      })
-      this.tasks.push(newtask);
+const title = 'My To Do App'
+let newTask = ref('')
+const tasks = ref([])
 
-      this.newTask = ''
-    },
-    async removeTask(taskID) {
-      await fetch("https://jgubwhhf94.execute-api.us-east-2.amazonaws.com/todos", {
-        method: "delete",
-        headers: {
-          "Content-Type": "application/json"
-        },
-        body: JSON.stringify({ id: taskID })
-      })
-      this.tasks = this.tasks.filter(task => {
-        return task.id !== taskID
-      });
-    },
-    finishTask(task) {
-      task.finished = !task.finished
-    }
-  },
+onMounted(async () => {
+  const response = await fetch("https://jgubwhhf94.execute-api.us-east-2.amazonaws.com/todos")
+  tasks.value = await response.json()
+})
 
-  computed: {
-    allTasks() {
-      return this.tasks.length
-    },
-    latest() {
-      return [...this.tasks].reverse()
-    }
+const addTask = async () => {
+  if (newTask.value.length < 1) return
+
+  let newtask = {
+    id: Math.floor(Math.random() * (999999999 - 100000000) + 100000000),
+    name: newTask.value,
+    finished: false
   }
-  
+  await fetch("https://jgubwhhf94.execute-api.us-east-2.amazonaws.com/todos", {
+    method: "post",
+    headers: {
+      "Content-Type": "application/json"
+    },
+    body: JSON.stringify(newtask)
+  })
+  tasks.value.push(newtask);
+
+  newTask.value = ''
 }
+
+const removeTask = async (taskID) => {
+  await fetch("https://jgubwhhf94.execute-api.us-east-2.amazonaws.com/todos", {
+    method: "delete",
+    headers: {
+      "Content-Type": "application/json"
+    },
+    body: JSON.stringify({id: taskID})
+  })
+  tasks.value = tasks.value.filter(task => {
+    return task.id !== taskID
+  });
+}
+
+const finishTask = (task) => {
+  task.finished = !task.finished
+}
+
+const allTasks = computed(() => tasks.value.length)
+const latest = computed(() => [...tasks.value].reverse())
+
 </script>
 
 
